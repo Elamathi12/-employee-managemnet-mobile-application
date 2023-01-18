@@ -1,1 +1,1 @@
-# -employee-managemnet-mobile-application
+# -employee-management-mobile-application
