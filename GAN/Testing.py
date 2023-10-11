@@ -147,7 +147,7 @@ def plotting(gen, test_data_loader,num_files_to_visualize):
 
 if __name__ == "__main__":
 
-    filename = "GAN MODEL  for 20 epochs_generator.pth"
+    filename = "WASSERSTEIN GAN MODEL  for 30 epochs_generator.pth"
     pathname = "D:/Mathi/PROJECTS/GAN/save_model/"
 
     Generator_filepath_to_load = pathname + filename

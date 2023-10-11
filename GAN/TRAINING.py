@@ -11,6 +11,7 @@ import numpy as np
 from Generator_Model import Generator
 from Discriminator_Model import Discriminator
 from Training_Functions import get_dataloader
+from WassersteinLoss import WassersteinLoss
 
 
 if __name__ == '__main__' :
@@ -29,10 +30,10 @@ if __name__ == '__main__' :
     generator_optimizer = optim.Adam(model_generator.parameters(), lr=1e-4, betas=(0.5, 0.9))
     discriminator_optimizer = optim.Adam(model_discriminator.parameters(), lr=1e-4, betas=(0.5, 0.9))
 
-    generator_loss = nn.L1Loss()   
-    discriminator_loss = nn.BCELoss()
+    generator_loss = WassersteinLoss()   
+    discriminator_loss = WassersteinLoss()
 
-    epochs = 20
+    epochs = 30
 
     g_loss_list = []
     d_loss_list = []
@@ -43,7 +44,7 @@ if __name__ == '__main__' :
 
     print(len(train_loader), "Shape of train loader")
 
-    title = 'GAN MODEL ' + ' for ' + str(epochs) + ' epochs' 
+    title = 'WASSERSTEIN GAN MODEL ' + ' for ' + str(epochs) + ' epochs' 
 
     def calculate_RMSE(actual,predicted):
         rmse = torch.sqrt(torch.mean((actual-predicted)**2))
@@ -66,15 +67,15 @@ if __name__ == '__main__' :
 
         real_labels = torch.ones(batch_size, 1,1,device=Device) 
         real_outputs = discriminator(data)
-        d_real_loss = loss_function(real_outputs, real_labels)   
+        #d_real_loss = loss_function(real_outputs, real_labels)   
        
         fake_data = generator(condition)       
         fake_labels = torch.zeros(batch_size,1,1,device=Device)
         fake_outputs = discriminator(fake_data.detach())
-        d_fake_loss = loss_function(fake_outputs, fake_labels)
+        #d_fake_loss = loss_function(fake_outputs, fake_labels)
 
         
-        d_loss = d_real_loss + d_fake_loss
+        d_loss = loss_function(real_outputs,fake_outputs)
         print(d_loss, "discriminator_losss")
         d_loss.backward()
 
