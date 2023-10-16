@@ -75,7 +75,10 @@ critic._init_weights()
 
 
 def train():
-    for epoch in range(hp.n_epochs):
+
+    visualize_epoch = [1,50,100,150,200]
+    current_epoch = 0
+    for epoch in range(1,(hp.n_epochs+1)):
         for i, (imgs, _) in enumerate(train_dataloader):
 
             # labelling real and fake
@@ -140,11 +143,19 @@ def train():
             ##################
 
             batches_done = epoch * len(train_dataloader) + i
-
+            
             if batches_done % hp.sample_interval == 0:
                 clear_output()
                 print(f"Epoch:{epoch}:It{i}:DLoss{d_loss.item()}:GLoss{g_loss.item()}")
-                #visualise_output(fake_images_from_generator.data[:50], 10, 10)
+
+                if epoch == visualize_epoch[current_epoch]:
+                    # Generate and visualize images
+                    generated_imgs = generator(img_shape,z).detach()
+                    visualise_output(generated_imgs.data[:50], 10, 10)
+                    current_epoch += 1
+
+                if current_epoch == len(visualize_epoch):
+                    break
 
 
 train()
