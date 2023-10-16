@@ -26,7 +26,7 @@ class Hyperparameters(object):
 
 
 hp = Hyperparameters(
-    n_epochs=200,
+    n_epochs=1000,
     batch_size=64,
     lr=0.00005,
     n_cpu=8,
@@ -76,7 +76,7 @@ critic._init_weights()
 
 def train():
 
-    visualize_epoch = [1,50,100,150,200]
+    visualize_epoch = [500,550,600,650,700,750,800,850,900,950,1000]
     current_epoch = 0
     for epoch in range(1,(hp.n_epochs+1)):
         for i, (imgs, _) in enumerate(train_dataloader):
