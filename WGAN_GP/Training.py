@@ -4,22 +4,22 @@ from torch.autograd import Variable
 from tqdm.auto import tqdm
 import torch.nn.functional as F
 import torch
-from utils import *
+from Critic import *
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
-
+from torchvision.utils import make_grid
 from IPython.display import clear_output
 
 
 
 from Generator import *
-from critic import *
+from Utils import *
 
 cuda = True if torch.cuda.is_available() else False
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-device = "cpu"
+device = "cuda"
 
 
 class Hyperparameters(object):
@@ -123,7 +123,7 @@ def gradient_penalty_l2_norm(gradient):
 
     return penalty
 
-root_path =  "D:/Mathi/PROJECTS/WGAN/FashionMNIST"
+root_path =  "D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/FashionMNIST"
 """ The Fashion-MNIST dataset contains 60,000 training images (and 10,000 test images) of fashion and clothing items,
 taken from 10 classes. Each image is a standardized 28×28 size in grayscale (784 total pixels). """
 
@@ -156,8 +156,19 @@ critic_optimizer = torch.optim.Adam(critic.parameters(), lr=lr, betas=(beta_1, b
 generator = generator.apply(weights_init)
 critic = critic.apply(weights_init)
 
+def save_images_from_tensor(image_tensor, output_dir, epoch, num_images=25, size=(1, 32, 32)):
+    # Normalize the image tensor to [0, 1]
+    image_tensor = (image_tensor + 1) / 2
 
+    # Detach the tensor from its computation graph and move it to the CPU
+    img_detached = image_tensor.detach().cpu()
 
+    # Create a grid of images using the make_grid function from torchvision.utils
+    image_grid = make_grid(img_detached[:num_images], nrow=5)
+
+    # Save the grid of images
+    os.makedirs(output_dir, exist_ok=True)
+    vutils.save_image(image_grid, os.path.join(output_dir, f'epoch_{epoch}.png'))
 
 
 ##############################
@@ -165,7 +176,7 @@ critic = critic.apply(weights_init)
 ##############################
 
 import matplotlib.pyplot as plt
-
+import torchvision.utils as vutils
 current_step = 0
 generator_losses = []
 critic_losses_across_critic_repeats = []
@@ -181,7 +192,7 @@ for epoch in range(1,(n_epochs+1)):
         mean_critic_loss_for_this_iteration = 0
         for _ in range(crit_repeats):
 
-            #########################///
+            #########################
             #  Train Critic
             #########################
             critic_optimizer.zero_grad()
@@ -239,30 +250,21 @@ for epoch in range(1,(n_epochs+1)):
         # Keep track of the average generator loss
         generator_losses.append(gen_loss.item())
     avg_generator_losses = sum(generator_losses)/len(generator_losses)
-        ##################################
-        #  Log Progress and Visualization
-        ##################################
-        # Do the below visualization for each display_step (i.e. each 50 step)
-    # if current_step % display_step == 0 and current_step > 0:
-    #     # Calculate Generator Mean loss for the latest display_steps (i.e. latest 50 steps)
-    #     # list[-x:]   # last x items in the array
-        # generator_mean_loss_display_step = (
-        #     sum(generator_losses[-display_step:]) / display_step
-        # )
 
-        # # Calculate Critic Mean loss for the latest display_steps (i.e. latest 50 steps)
-        # critic_mean_loss_display_step = (
-        #     sum(critic_losses_across_critic_repeats[-display_step:]) / display_step
-        # )
     print( f"Step {current_step}: Generator loss: {avg_generator_losses}, critic loss: {mean_critic_loss_for_this_iteration}")
     if epoch == visualize_epoch[current_epoch]:
-    # Plot both the real images and fake generated images
-        plot_images_from_tensor(fake)
-        plot_images_from_tensor(real)
+        # Save real images
+        real_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/Figures/REAL IMAGES'
+        save_images_from_tensor(real, real_image_dir, epoch)
 
+        # Save generated images
+        generated_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/Figures/GENERATED IMAGES'
+        save_images_from_tensor(fake, generated_image_dir, epoch)
+        loss_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/Figures/LOSS IMAGES'
+        os.makedirs(loss_image_dir, exist_ok=True)
         step_bins = 20
         num_examples = (len(generator_losses) // step_bins) * step_bins
-
+        plt.figure()
         plt.plot(
             range(num_examples // step_bins),
             torch.Tensor(generator_losses[:num_examples])
@@ -278,7 +280,8 @@ for epoch in range(1,(n_epochs+1)):
             label="Critic Loss",
         )
         plt.legend()
-        plt.show()
+        plt.savefig(os.path.join(loss_image_dir, f'loss_plot_epoch_{epoch}.png'))
+        plt.close()
         current_epoch += 1
     if current_epoch == len(visualize_epoch):
         break
