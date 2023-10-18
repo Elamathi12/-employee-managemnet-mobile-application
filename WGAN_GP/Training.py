@@ -31,12 +31,12 @@ n_epochs = 100
 z_dim = 64
 display_step = 50  # Only for visualization of my output during training
 batch_size = 128
-lr = 0.0002
+lr = 0.0001
 beta_1 = 0.5
 beta_2 = 0.999
 c_lambda = 10
 
-crit_repeats = 5
+crit_repeats = 10
 # Number of times the Critic will be trained for each Generator Training
 
 hp = Hyperparameters(
@@ -123,12 +123,12 @@ def gradient_penalty_l2_norm(gradient):
 
     return penalty
 
-root_path =  "D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/FashionMNIST"
+root_path =  "D:/Elamathi/Projects/PROJECTS/WGAN_GP/MNIST"
 """ The Fashion-MNIST dataset contains 60,000 training images (and 10,000 test images) of fashion and clothing items,
 taken from 10 classes. Each image is a standardized 28×28 size in grayscale (784 total pixels). """
 
 dataloader = torch.utils.data.DataLoader(
-    datasets.FashionMNIST(
+    datasets.MNIST(
         root_path,
         train=True,
         download=True,
@@ -156,7 +156,7 @@ critic_optimizer = torch.optim.Adam(critic.parameters(), lr=lr, betas=(beta_1, b
 generator = generator.apply(weights_init)
 critic = critic.apply(weights_init)
 
-def save_images_from_tensor(image_tensor, output_dir, epoch, num_images=25, size=(1, 32, 32)):
+def save_images_from_tensor(image_tensor, output_dir, epoch, num_images=25, size=(128,128)):
     # Normalize the image tensor to [0, 1]
     image_tensor = (image_tensor + 1) / 2
 
@@ -180,7 +180,7 @@ import torchvision.utils as vutils
 current_step = 0
 generator_losses = []
 critic_losses_across_critic_repeats = []
-visualize_epoch = [1,2,5,15,30,45,70,100]
+visualize_epoch = [1,2,5,15,25,30,45,50,55,60,65,70,75,80,85,90,95100]
 current_epoch = 0
 for epoch in range(1,(n_epochs+1)):
     print(f"~~~~~~~~~~Epoch {epoch}/{n_epochs}~~~~~~~~~~~~")
@@ -254,13 +254,13 @@ for epoch in range(1,(n_epochs+1)):
     print( f"Step {current_step}: Generator loss: {avg_generator_losses}, critic loss: {mean_critic_loss_for_this_iteration}")
     if epoch == visualize_epoch[current_epoch]:
         # Save real images
-        real_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/Figures/REAL IMAGES'
+        real_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP/Figures/100 epochs MNIST/REAL_IMAGES_1'
         save_images_from_tensor(real, real_image_dir, epoch)
 
         # Save generated images
-        generated_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/Figures/GENERATED IMAGES'
+        generated_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP/Figures/100 epochs MNIST/FAKE_IMAGES_1'
         save_images_from_tensor(fake, generated_image_dir, epoch)
-        loss_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP_200 EPOCHS/Figures/LOSS IMAGES'
+        loss_image_dir = r'D:/Elamathi/Projects/PROJECTS/WGAN_GP/Figures/100 epochs MNIST/LOSS_IMAGES_1'
         os.makedirs(loss_image_dir, exist_ok=True)
         step_bins = 20
         num_examples = (len(generator_losses) // step_bins) * step_bins
