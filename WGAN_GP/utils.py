@@ -5,41 +5,6 @@ import matplotlib.pyplot as plt
 
 torch.manual_seed(0) 
 
-def plot_images_from_tensor(image_tensor, num_images=25, size=(1, 28, 28)):
-    # Normalize the image tensor to [0, 1]
-    image_tensor = (image_tensor + 1) / 2
-
-    # Detach the tensor from its computation graph and move it to the CPU
-    img_detached = image_tensor.detach().cpu()
-
-    # Create a grid of images using the make_grid function from torchvision.utils
-    image_grid = make_grid(img_detached[:num_images], nrow=5)
-
-    # Plot the grid of images
-    plt.imshow(image_grid.permute(1, 2, 0).squeeze())
-    plt.show()
-
-""" The reason for doing "image_grid.permute(1, 2, 0)"
-
-PyTorch modules processing image data expect tensors in the format C × H × W.
-
-Whereas PILLow and Matplotlib expect image arrays in the format H × W × C
-
-So to use them with matplotlib you need to reshape it
-to put the channels as the last dimension:
-
-I could have used permute() method as well like below
-"np.transpose(npimg, (1, 2, 0))"
-
-------------------
-
-Tensor.detach() is used to detach a tensor from the current computational graph. It returns a new tensor that doesn't require a gradient.
-
-When we don't need a tensor to be traced for the gradient computation, we detach the tensor from the current computational graph.
-
-We also need to detach a tensor when we need to move the tensor from GPU to CPU.
-
-"""
 
 def make_grad_hook():
     """
