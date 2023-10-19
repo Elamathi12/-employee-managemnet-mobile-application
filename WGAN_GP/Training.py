@@ -4,7 +4,7 @@ from torch.autograd import Variable
 from tqdm.auto import tqdm
 import torch.nn.functional as F
 import torch
-from Critic import *
+from critic import *
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -15,11 +15,11 @@ from IPython.display import clear_output
 
 
 from Generator import *
-from Utils import *
+from utils import *
 
 cuda = True if torch.cuda.is_available() else False
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
-device = "cuda"
+device = "cpu"
 
 
 class Hyperparameters(object):
@@ -27,7 +27,7 @@ class Hyperparameters(object):
         self.__dict__.update(kwargs)
 
 
-n_epochs = 100
+n_epochs = 1
 z_dim = 64
 display_step = 50  # Only for visualization of my output during training
 batch_size = 128
@@ -40,7 +40,7 @@ crit_repeats = 5
 # Number of times the Critic will be trained for each Generator Training
 
 hp = Hyperparameters(
-    n_epochs=1000,
+    n_epochs=1,
     batch_size=64,
     lr=0.00005,
     n_cpu=8,
@@ -146,10 +146,10 @@ dataloader = torch.utils.data.DataLoader(
 
 
 
-generator = Generator(z_dim).to(device)
+generator = Generator(input_shape = (1, 1, 64, 64)).to(device)
 gen_optimizer = torch.optim.Adam(generator.parameters(), lr=lr, betas=(beta_1, beta_2))
 
-critic = Critic().to(device)
+critic = Critic(input_shape = (1,1,22,22)).to(device)
 critic_optimizer = torch.optim.Adam(critic.parameters(), lr=lr, betas=(beta_1, beta_2))
 
 
