@@ -26,3 +26,9 @@ class Generator(nn.Module):
         x = F.relu(self.bn3(self.conv2(x)))
         x = torch.tanh(self.conv3(x))  # Tanh activation for the final layer
         return x
+    
+
+
+
+
+    
