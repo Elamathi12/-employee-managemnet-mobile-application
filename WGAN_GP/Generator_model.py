@@ -5,7 +5,7 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        self.l1 = nn.Linear(64, 128)
+        self.l1 = nn.Linear(32, 128)
         self.leaky_relu1 = nn.LeakyReLU(0.2, inplace=True)
         self.l2 = nn.Linear(128, 256)
         self.leaky_relu2 = nn.LeakyReLU(0.2, inplace=True)

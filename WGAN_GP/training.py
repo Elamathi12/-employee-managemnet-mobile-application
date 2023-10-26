@@ -1,5 +1,6 @@
 import numpy as np
-
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='TRUE'
 import torch
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
@@ -7,14 +8,13 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torch.autograd import Variable
 import matplotlib.pyplot as plt 
-import cv2
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms.functional as tf
 from PIL import Image
 from critic_model import Critic
-from generator_model import Generator
+from Generator_model import Generator
 import multiprocessing
 multiprocessing.set_start_method('spawn')
 from torchvision.utils import make_grid, save_image
@@ -25,13 +25,13 @@ cuda = True if torch.cuda.is_available() else False
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 # Parameters
-n_epochs = 80
-batch_size = 256
+n_epochs = 100
+batch_size = 128
 lr_c = 0.0005
 lr_g = 0.0002
 b1 = 0.5
 b2 = 0.999
-latent_dim = 64
+latent_dim = 32
 img_size = 28
 n_critic = 2
 g_loss_list= []
@@ -56,11 +56,11 @@ def calc_gradient_penalty(netD, real, fake, device):
     
 
 def get_latent_condition(batch):
-    z = torch.zeros(batch, 64)
+    z = torch.zeros(batch, 32)
     nn.init.normal_(z)
     return z
 
-def show_results(g, epoch_done, output_directory='D:/Elamathi/Projects/PROJECTS/WGAN_GP/Figures/generated_images'):
+def show_results(g, epoch_done, output_directory='D:/Elamathi/Projects/PROJECTS/WGAN_GP/Figures/generated_images_MNIST'):
     os.makedirs(output_directory, exist_ok=True)
     z = get_latent_condition(100).to(device)
     fake = g(z).detach().cpu().numpy()
@@ -85,7 +85,7 @@ def get_dataloader(trainset, img_size, batch_size):
     new_trainset = torch.from_numpy(trainset.astype(np.float32)).view(-1, 1, img_size, img_size)
     return torch.utils.data.DataLoader(new_trainset, batch_size=batch_size,num_workers=0, shuffle=True)
 
-root_path =  "D:/Elamathi/Projects/PROJECTS/WGAN_GP/FashionMNIST"
+root_path =  "D:/Elamathi/Projects/PROJECTS/WGAN_GP/MNIST"
 dataset = torchvision.datasets.FashionMNIST(root_path, train=True, download=True)
 # discard labels in dataset
 data = np.array([np.array(img) for img, _ in dataset])
@@ -93,7 +93,7 @@ mean, std = data.mean(), data.std()
 data = (data - mean) / std
 
 img_size = 28  
-batch_size = 256
+batch_size = 128
 
 
 dataloader = get_dataloader(data, img_size, batch_size)
@@ -120,7 +120,7 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'  # --device cuda:0 if torch.cuda.is_available() else cpu
 generated_images = []
 # Training loop
-for epoch in range(1,(n_epochs+1)):  # --n_epochs 80
+for epoch in range(1,(n_epochs+1)):  
     for i, (imgs) in enumerate(dataloader):
         # Configure input
         real_imgs = imgs.to(device)  # No need for Variable() and Tensor() in newer PyTorch versions
@@ -130,7 +130,7 @@ for epoch in range(1,(n_epochs+1)):  # --n_epochs 80
         optimizer_C.zero_grad()
 
         # Sample noise as generator input
-        z = torch.randn(imgs.shape[0], latent_dim).to(device)  # --latent_dim 64
+        z = torch.randn(imgs.shape[0], latent_dim).to(device)  
 
         # Generate a batch of images
         fake_imgs = generator(z).detach()
@@ -156,7 +156,7 @@ for epoch in range(1,(n_epochs+1)):  # --n_epochs 80
         optimizer_G.zero_grad()
 
         # Sample noise as generator input
-        z = torch.randn(imgs.shape[0], latent_dim).to(device)  # --latent_dim 64
+        z = torch.randn(imgs.shape[0], latent_dim).to(device)  
 
         # Generate a batch of images
         gen_imgs = generator(z)
